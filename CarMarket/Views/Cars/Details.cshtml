@@ -1,0 +1,113 @@
+@model CarMarket.Models.Car
+
+@{
+    ViewData["Title"] = "Car Details";
+}
+
+<div class="container mt-4">
+
+    <div class="row">
+
+        <!-- LEFT SIDE: IMAGES -->
+        <div class="col-md-6">
+
+            <!-- MAIN IMAGE -->
+            <img src="@(string.IsNullOrEmpty(Model.ImageUrl)
+                                         ? "/images/no-car-image.jpg"
+                                         : Model.ImageUrl)"
+                 class="img-fluid rounded shadow mb-3"
+                 alt="@Model.Brand @Model.Model"
+                 style="width: 100%; height: 450px; object-fit: cover;" />
+
+            <!-- EXTRA IMAGES -->
+            <div class="row g-2">
+
+                @if (!string.IsNullOrEmpty(Model.ImageUrl2))
+                {
+                    <div class="col-4">
+                        <img src="@Model.ImageUrl2"
+                             class="img-fluid rounded shadow-sm"
+                             alt="Extra image 1"
+                             style="width: 100%; height: 120px; object-fit: cover;" />
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.ImageUrl3))
+                {
+                    <div class="col-4">
+                        <img src="@Model.ImageUrl3"
+                             class="img-fluid rounded shadow-sm"
+                             alt="Extra image 2"
+                             style="width: 100%; height: 120px; object-fit: cover;" />
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.ImageUrl4))
+                {
+                    <div class="col-4">
+                        <img src="@Model.ImageUrl4"
+                             class="img-fluid rounded shadow-sm"
+                             alt="Extra image 3"
+                             style="width: 100%; height: 120px; object-fit: cover;" />
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDE: CAR INFORMATION -->
+        <div class="col-md-6">
+
+            <h1>
+                @Model.Brand @Model.Model
+            </h1>
+
+            <h3 class="text-success mb-4">
+                @Model.Price.ToString("N0") kr
+            </h3>
+
+            <p>
+                <strong>Year:</strong>
+                @Model.Year
+            </p>
+
+            <p>
+                <strong>Mileage:</strong>
+                @Model.Mileage km
+            </p>
+
+            <p>
+                <strong>Fuel Type:</strong>
+                @Model.FuelType
+            </p>
+
+            <hr />
+
+            <h4>Description</h4>
+
+            <p>
+                @Model.Description
+            </p>
+
+            <hr />
+
+            <a asp-action="Index"
+               class="btn btn-secondary">
+                Back to Cars
+            </a>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Edit"
+                   asp-route-id="@Model.Id"
+                   class="btn btn-warning">
+                    Edit
+                </a>
+            }
+
+        </div>
+
+    </div>
+
+</div>

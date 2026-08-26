@@ -1,0 +1,133 @@
+@model IEnumerable<CarMarket.Models.Car>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+<h1>Cars</h1>
+
+<form asp-action="Index" method="get" class="mb-3">
+
+    <div class="row g-2">
+
+        <div class="col-md-5">
+            <input type="text"
+                   name="searchString"
+                   class="form-control"
+                   placeholder="Search by brand or model..." />
+        </div>
+
+        <div class="col-md-3">
+            <select name="fuelType" class="form-select">
+
+                <option value="">All fuel types</option>
+
+                <option value="Petrol">Petrol</option>
+
+                <option value="Diesel">Diesel</option>
+
+                <option value="Hybrid">Hybrid</option>
+
+                <option value="Electric">Electric</option>
+
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <button type="submit"
+                    class="btn btn-primary w-100">
+                Search
+            </button>
+        </div>
+
+        <div class="col-md-2">
+            <a asp-action="Index"
+               class="btn btn-secondary w-100">
+                Clear
+            </a>
+        </div>
+
+    </div>
+
+</form>
+
+
+@if (User.IsInRole("Admin"))
+{
+    <a asp-action="Create" class="btn btn-success">
+        Add Car
+    </a>
+}
+<table class="table">
+    <div class="row">
+
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 mb-4">
+
+                <div class="card h-100 shadow-sm">
+
+                    <img src="@(string.IsNullOrEmpty(item.ImageUrl)
+                                                      ? "/images/no-car-image.jpg"
+                                                      : item.ImageUrl)"
+                         class="card-img-top"
+                         alt="@item.Brand @item.Model"
+                         style="height: 220px; object-fit: cover;" />
+
+                    <div class="card-body">
+
+                        <h4 class="card-title">
+                            @item.Brand @item.Model
+                        </h4>
+
+                        <p>
+                            <strong>Year:</strong> @item.Year
+                        </p>
+
+                        <p>
+                            <strong>Mileage:</strong> @item.Mileage km
+                        </p>
+
+                        <p>
+                            <strong>Fuel:</strong> @item.FuelType
+                        </p>
+
+                        <h5>
+                            @item.Price.ToString("N0") kr
+                        </h5>
+
+                    </div>
+
+                    <div class="card-footer">
+
+                        <a asp-action="Details"
+                           asp-route-id="@item.Id"
+                           class="btn btn-primary">
+                            Details
+                        </a>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-action="Edit"
+                               asp-route-id="@item.Id"
+                               class="btn btn-warning">
+                                Edit
+                            </a>
+
+                            <a asp-action="Delete"
+                               asp-route-id="@item.Id"
+                               class="btn btn-danger">
+                                Delete
+                            </a>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+</table>
