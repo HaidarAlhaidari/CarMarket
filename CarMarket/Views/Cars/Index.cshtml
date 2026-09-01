@@ -24,17 +24,17 @@
         <div class="col-lg-5">
             <label for="searchString" class="form-label fw-semibold">Brand or model</label>
             <input id="searchString" type="search" name="searchString"
-                   class="form-control" placeholder="For example Audi or A6" />
+                   class="form-control" value="@ViewData["CurrentSearch"]" placeholder="For example Audi or A6" />
         </div>
 
         <div class="col-lg-3">
             <label for="fuelType" class="form-label fw-semibold">Fuel type</label>
             <select id="fuelType" name="fuelType" class="form-select">
                 <option value="">All fuel types</option>
-                <option value="Petrol">Petrol</option>
-                <option value="Diesel">Diesel</option>
-                <option value="Hybrid">Hybrid</option>
-                <option value="Electric">Electric</option>
+                <option value="Petrol" selected="@(ViewData["CurrentFuelType"]?.ToString() == "Petrol")">Petrol / Bensin</option>
+                <option value="Diesel" selected="@(ViewData["CurrentFuelType"]?.ToString() == "Diesel")">Diesel</option>
+                <option value="Hybrid" selected="@(ViewData["CurrentFuelType"]?.ToString() == "Hybrid")">Hybrid</option>
+                <option value="Electric" selected="@(ViewData["CurrentFuelType"]?.ToString() == "Electric")">Electric</option>
             </select>
         </div>
 
