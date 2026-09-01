@@ -1,52 +1,78 @@
-﻿@{
+@{
     ViewData["Title"] = "Home";
 }
 
-<div class="hero-section">
-
+<section class="hero-section">
     <div class="hero-content">
-
-        <h1 class="display-3 fw-bold">
-            Find Your Next Car
-        </h1>
-
-        <p class="lead">
-            Browse quality cars and find the right vehicle for you.
-        </p>
-
-        <a asp-controller="Cars"
-           asp-action="Index"
-           class="btn btn-primary btn-lg">
-            Browse Cars
-        </a>
-
-    </div>
-
-</div>
-
-<hr />
-
-<div class="row text-center mt-5">
-
-    <div class="col-md-4 mb-4">
-        <h3>🚗 Wide Selection</h3>
+        <span class="hero-kicker">A smarter way to buy a car</span>
+        <h1>Find a car that fits your life.</h1>
         <p>
-            Browse cars from different brands, models and fuel types.
+            Explore carefully presented car listings, compare the important details
+            and contact the seller when you have found the right one.
         </p>
+        <div class="hero-actions">
+            <a asp-controller="Cars" asp-action="Index" class="btn btn-primary btn-lg">
+                Browse all cars
+            </a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Cars" asp-action="Create" class="btn btn-light btn-lg">
+                    Sell your car
+                </a>
+            }
+            else
+            {
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-light btn-lg">
+                    Create account
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="trust-strip" aria-label="CarMarket benefits">
+    <div class="trust-item">
+        <strong>Quality listings</strong>
+        <span>Clear information and multiple images</span>
+    </div>
+    <div class="trust-item">
+        <strong>Powerful search</strong>
+        <span>Find cars by brand, model and fuel type</span>
+    </div>
+    <div class="trust-item">
+        <strong>Secure accounts</strong>
+        <span>Protected access for buyers and sellers</span>
+    </div>
+</section>
+
+<section>
+    <div class="section-heading">
+        <p class="page-eyebrow">How it works</p>
+        <h2>Your next car in three simple steps</h2>
+        <p>CarMarket keeps the journey simple, from the first search to the right vehicle.</p>
     </div>
 
-    <div class="col-md-4 mb-4">
-        <h3>🔍 Easy Search</h3>
-        <p>
-            Search and filter cars by brand, model and fuel type.
-        </p>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <article class="feature-card">
+                <span class="feature-number">01</span>
+                <h3>Search and filter</h3>
+                <p>Browse available cars and narrow the results by brand, model or fuel type.</p>
+            </article>
+        </div>
+        <div class="col-md-4">
+            <article class="feature-card">
+                <span class="feature-number">02</span>
+                <h3>Compare the details</h3>
+                <p>Review price, mileage, year, fuel type, description and vehicle images.</p>
+            </article>
+        </div>
+        <div class="col-md-4">
+            <article class="feature-card">
+                <span class="feature-number">03</span>
+                <h3>Choose your car</h3>
+                <p>Open the complete listing and take the next step when the car feels right.</p>
+            </article>
+        </div>
     </div>
-
-    <div class="col-md-4 mb-4">
-        <h3>🔒 Secure Access</h3>
-        <p>
-            Secure login and role-based access for users and administrators.
-        </p>
-    </div>
-
-</div>
+</section>
