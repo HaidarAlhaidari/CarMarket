@@ -1,13 +1,18 @@
+@using System.Security.Claims
 @model IEnumerable<CarMarket.Models.Car>
 
 @{
-    ViewData["Title"] = "Index";
-}
+    ViewData["Title"] = "Cars";
 
+    var currentUserId =
+        User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
 
 <h1>Cars</h1>
 
-<form asp-action="Index" method="get" class="mb-3">
+<form asp-action="Index"
+      method="get"
+      class="mb-3">
 
     <div class="row g-2">
 
@@ -19,16 +24,13 @@
         </div>
 
         <div class="col-md-3">
-            <select name="fuelType" class="form-select">
+            <select name="fuelType"
+                    class="form-select">
 
                 <option value="">All fuel types</option>
-
                 <option value="Petrol">Petrol</option>
-
                 <option value="Diesel">Diesel</option>
-
                 <option value="Hybrid">Hybrid</option>
-
                 <option value="Electric">Electric</option>
 
             </select>
@@ -52,82 +54,85 @@
 
 </form>
 
-
-@if (User.IsInRole("Admin"))
+@if (User.Identity?.IsAuthenticated == true)
 {
-    <a asp-action="Create" class="btn btn-success">
+    <a asp-action="Create"
+       class="btn btn-success mb-3">
         Add Car
     </a>
 }
-<table class="table">
-    <div class="row">
 
-        @foreach (var item in Model)
-        {
-            <div class="col-md-4 mb-4">
+<div class="row">
 
-                <div class="card h-100 shadow-sm">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 mb-4">
 
-                    <img src="@(string.IsNullOrEmpty(item.ImageUrl)
-                                                      ? "/images/no-car-image.jpg"
-                                                      : item.ImageUrl)"
-                         class="card-img-top"
-                         alt="@item.Brand @item.Model"
-                         style="height: 220px; object-fit: cover;" />
+            <div class="card h-100 shadow-sm">
 
-                    <div class="card-body">
+                <img src="@(string.IsNullOrEmpty(item.ImageUrl)
+                                              ? "/images/no-car-image.jpg"
+                                              : item.ImageUrl)"
+                     class="card-img-top"
+                     alt="@item.Brand @item.Model"
+                     style="height: 220px; object-fit: cover;" />
 
-                        <h4 class="card-title">
-                            @item.Brand @item.Model
-                        </h4>
+                <div class="card-body">
 
-                        <p>
-                            <strong>Year:</strong> @item.Year
-                        </p>
+                    <h4 class="card-title">
+                        @item.Brand @item.Model
+                    </h4>
 
-                        <p>
-                            <strong>Mileage:</strong> @item.Mileage km
-                        </p>
+                    <p>
+                        <strong>Year:</strong>
+                        @item.Year
+                    </p>
 
-                        <p>
-                            <strong>Fuel:</strong> @item.FuelType
-                        </p>
+                    <p>
+                        <strong>Mileage:</strong>
+                        @item.Mileage km
+                    </p>
 
-                        <h5>
-                            @item.Price.ToString("N0") kr
-                        </h5>
+                    <p>
+                        <strong>Fuel:</strong>
+                        @item.FuelType
+                    </p>
 
-                    </div>
+                    <h5>
+                        @item.Price.ToString("N0") kr
+                    </h5>
 
-                    <div class="card-footer">
+                </div>
 
-                        <a asp-action="Details"
+                <div class="card-footer">
+
+                    <a asp-action="Details"
+                       asp-route-id="@item.Id"
+                       class="btn btn-primary">
+                        Details
+                    </a>
+
+                    @if (User.IsInRole("Admin") ||
+                         item.SellerId == currentUserId)
+                    {
+                        <a asp-action="Edit"
                            asp-route-id="@item.Id"
-                           class="btn btn-primary">
-                            Details
+                           class="btn btn-warning">
+                            Edit
                         </a>
 
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <a asp-action="Edit"
-                               asp-route-id="@item.Id"
-                               class="btn btn-warning">
-                                Edit
-                            </a>
-
-                            <a asp-action="Delete"
-                               asp-route-id="@item.Id"
-                               class="btn btn-danger">
-                                Delete
-                            </a>
-                        }
-
-                    </div>
+                        <a asp-action="Delete"
+                           asp-route-id="@item.Id"
+                           class="btn btn-danger">
+                            Delete
+                        </a>
+                    }
 
                 </div>
 
             </div>
-        }
 
-    </div>
-</table>
+        </div>
+    }
+
+</div>
