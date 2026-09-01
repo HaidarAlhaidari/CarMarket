@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace CarMarket.Models
 {
@@ -32,5 +33,13 @@ namespace CarMarket.Models
         public string? ImageUrl3 { get; set; }
 
         public string? ImageUrl4 { get; set; }
+
+
+        // Användaren som äger annonsen
+        // Identity-användaren som äger annonsen.
+        // Nullable eftersom gamla annonser ännu inte har någon SellerId.
+        public string? SellerId { get; set; }
+
+        public IdentityUser? Seller { get; set; }
     }
 }

@@ -4,62 +4,179 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// ----------------------------------------------------
+// DATABASE
+// ----------------------------------------------------
+
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException(
+        "Connection string 'DefaultConnection' was not found.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options =>
-    options.SignIn.RequireConfirmedAccount = false)
+// ----------------------------------------------------
+// IDENTITY OCH SÄKERHET
+// ----------------------------------------------------
+
+builder.Services
+    .AddDefaultIdentity<IdentityUser>(options =>
+    {
+        // E-postadressen måste vara unik
+        options.User.RequireUniqueEmail = true;
+
+        // Kan ändras till true senare när e-postbekräftelse fungerar
+        options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedEmail = false;
+
+        // Krav på lösenord
+        options.Password.RequiredLength = 10;
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequiredUniqueChars = 1;
+
+        // Lås kontot efter flera felaktiga inloggningsförsök
+        options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.DefaultLockoutTimeSpan =
+            TimeSpan.FromMinutes(15);
+    })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Inställningar för inloggnings-cookie
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.Name = "CarMarket.Auth";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy =
+        CookieSecurePolicy.Always;
+    options.Cookie.SameSite =
+        SameSiteMode.Lax;
+
+    options.ExpireTimeSpan =
+        TimeSpan.FromMinutes(60);
+
+    options.SlidingExpiration = true;
+
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
+    options.AccessDeniedPath =
+        "/Identity/Account/AccessDenied";
+});
+
+// MVC Controllers och Razor Views
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+// ----------------------------------------------------
+// SKAPA ROLLER OCH ADMIN
+// ----------------------------------------------------
+
 using (var scope = app.Services.CreateScope())
 {
+    var services = scope.ServiceProvider;
+
     var roleManager =
-        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        services.GetRequiredService<RoleManager<IdentityRole>>();
 
     var userManager =
-        scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        services.GetRequiredService<UserManager<IdentityUser>>();
 
-    string[] roles = { "Admin", "User" };
-
-    foreach (var role in roles)
+    // Roller som ska finnas i databasen
+    string[] roles =
     {
-        if (!await roleManager.RoleExistsAsync(role))
+        "Admin",
+        "User"
+    };
+
+    foreach (string roleName in roles)
+    {
+        bool roleExists =
+            await roleManager.RoleExistsAsync(roleName);
+
+        if (!roleExists)
         {
-            await roleManager.CreateAsync(new IdentityRole(role));
+            await roleManager.CreateAsync(
+                new IdentityRole(roleName));
         }
     }
 
-    string adminEmail = "admin@carmarket.se";
-    string adminPassword = "Admin123!";
+    // Uppgifterna läses från User Secrets.
+    // De ska inte skrivas direkt i Program.cs.
+    string? adminEmail =
+        builder.Configuration["AdminUser:Email"];
 
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    string? adminPassword =
+        builder.Configuration["AdminUser:Password"];
 
-    if (adminUser == null)
+    if (!string.IsNullOrWhiteSpace(adminEmail) &&
+        !string.IsNullOrWhiteSpace(adminPassword))
     {
-        adminUser = new IdentityUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            EmailConfirmed = true
-        };
+        var adminUser =
+            await userManager.FindByEmailAsync(adminEmail);
 
-        var result =
-            await userManager.CreateAsync(adminUser, adminPassword);
-
-        if (result.Succeeded)
+        // Skapa administratören om kontot inte finns
+        if (adminUser == null)
         {
-            await userManager.AddToRoleAsync(adminUser, "Admin");
+            adminUser = new IdentityUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true
+            };
+
+            var createResult =
+                await userManager.CreateAsync(
+                    adminUser,
+                    adminPassword);
+
+            if (!createResult.Succeeded)
+            {
+                var errors = string.Join(
+                    ", ",
+                    createResult.Errors.Select(
+                        error => error.Description));
+
+                throw new InvalidOperationException(
+                    $"Admin user could not be created: {errors}");
+            }
+        }
+
+        // Kontrollera att användaren har Admin-rollen
+        if (!await userManager.IsInRoleAsync(
+                adminUser,
+                "Admin"))
+        {
+            var roleResult =
+                await userManager.AddToRoleAsync(
+                    adminUser,
+                    "Admin");
+
+            if (!roleResult.Succeeded)
+            {
+                var errors = string.Join(
+                    ", ",
+                    roleResult.Errors.Select(
+                        error => error.Description));
+
+                throw new InvalidOperationException(
+                    $"Admin role could not be added: {errors}");
+            }
         }
     }
 }
 
-// Configure the HTTP request pipeline.
+// ----------------------------------------------------
+// HTTP PIPELINE
+// ----------------------------------------------------
+
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -67,23 +184,31 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+
+    // Skyddar webbplatsen genom att kräva HTTPS
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+
 app.UseRouting();
 
+// Viktig ordning:
+// 1. Kontrollera vem användaren är
+// 2. Kontrollera vad användaren får göra
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
 
+// Standard-route för MVC
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// Identity använder Razor Pages
 app.MapRazorPages()
-   .WithStaticAssets();
+    .WithStaticAssets();
 
 app.Run();
