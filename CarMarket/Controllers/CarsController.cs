@@ -28,16 +28,35 @@ public class CarsController : Controller
 
         if (!string.IsNullOrWhiteSpace(searchString))
         {
+            string search = searchString.Trim();
+
             cars = cars.Where(car =>
-                car.Brand.Contains(searchString) ||
-                car.Model.Contains(searchString));
+                car.Brand.Contains(search) ||
+                car.Model.Contains(search));
         }
 
         if (!string.IsNullOrWhiteSpace(fuelType))
         {
-            cars = cars.Where(car =>
-                car.FuelType == fuelType);
+            string selectedFuel = fuelType.Trim().ToLower();
+
+            if (selectedFuel == "petrol" ||
+                selectedFuel == "bensin" ||
+                selectedFuel == "gasoline")
+            {
+                cars = cars.Where(car =>
+                    car.FuelType.ToLower() == "petrol" ||
+                    car.FuelType.ToLower() == "bensin" ||
+                    car.FuelType.ToLower() == "gasoline");
+            }
+            else
+            {
+                cars = cars.Where(car =>
+                    car.FuelType.ToLower() == selectedFuel);
+            }
         }
+
+        ViewData["CurrentSearch"] = searchString;
+        ViewData["CurrentFuelType"] = fuelType;
 
         return View(await cars.ToListAsync());
     }
