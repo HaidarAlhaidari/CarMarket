@@ -2,137 +2,110 @@
 @model IEnumerable<CarMarket.Models.Car>
 
 @{
-    ViewData["Title"] = "Cars";
-
-    var currentUserId =
-        User.FindFirstValue(ClaimTypes.NameIdentifier);
+    ViewData["Title"] = "Browse Cars";
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 }
 
-<h1>Cars</h1>
+<section class="page-header">
+    <div>
+        <p class="page-eyebrow">Available vehicles</p>
+        <h1 class="page-title">Find your next car</h1>
+        <p class="page-subtitle">Search and compare @Model.Count() car listings.</p>
+    </div>
 
-<form asp-action="Index"
-      method="get"
-      class="mb-3">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a asp-action="Create" class="btn btn-primary">+ Add a car</a>
+    }
+</section>
 
-    <div class="row g-2">
-
-        <div class="col-md-5">
-            <input type="text"
-                   name="searchString"
-                   class="form-control"
-                   placeholder="Search by brand or model..." />
+<form asp-action="Index" method="get" class="search-panel">
+    <div class="row g-3">
+        <div class="col-lg-5">
+            <label for="searchString" class="form-label fw-semibold">Brand or model</label>
+            <input id="searchString" type="search" name="searchString"
+                   class="form-control" placeholder="For example Audi or A6" />
         </div>
 
-        <div class="col-md-3">
-            <select name="fuelType"
-                    class="form-select">
-
+        <div class="col-lg-3">
+            <label for="fuelType" class="form-label fw-semibold">Fuel type</label>
+            <select id="fuelType" name="fuelType" class="form-select">
                 <option value="">All fuel types</option>
                 <option value="Petrol">Petrol</option>
                 <option value="Diesel">Diesel</option>
                 <option value="Hybrid">Hybrid</option>
                 <option value="Electric">Electric</option>
-
             </select>
         </div>
 
-        <div class="col-md-2">
-            <button type="submit"
-                    class="btn btn-primary w-100">
-                Search
-            </button>
+        <div class="col-lg-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Search</button>
         </div>
 
-        <div class="col-md-2">
-            <a asp-action="Index"
-               class="btn btn-secondary w-100">
-                Clear
-            </a>
+        <div class="col-lg-2 d-flex align-items-end">
+            <a asp-action="Index" class="btn btn-outline-secondary w-100">Clear</a>
         </div>
-
     </div>
-
 </form>
 
-@if (User.Identity?.IsAuthenticated == true)
+@if (Model.Any())
 {
-    <a asp-action="Create"
-       class="btn btn-success mb-3">
-        Add Car
-    </a>
-}
-
-<div class="row">
-
-    @foreach (var item in Model)
-    {
-        <div class="col-md-4 mb-4">
-
-            <div class="card h-100 shadow-sm">
-
-                <img src="@(string.IsNullOrEmpty(item.ImageUrl)
+    <div class="row g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 col-xl-4">
+                <article class="car-card">
+                    <div class="car-image-wrap">
+                        <img src="@(string.IsNullOrEmpty(item.ImageUrl)
                                               ? "/images/no-car-image.jpg"
                                               : item.ImageUrl)"
-                     class="card-img-top"
-                     alt="@item.Brand @item.Model"
-                     style="height: 220px; object-fit: cover;" />
+                             class="car-image"
+                             alt="@item.Brand @item.Model" />
+                        <span class="car-badge">@item.FuelType</span>
+                    </div>
 
-                <div class="card-body">
+                    <div class="car-card-body">
+                        <h2 class="car-card-title">@item.Brand @item.Model</h2>
+                        <p class="car-card-price">@item.Price.ToString("N0") kr</p>
 
-                    <h4 class="card-title">
-                        @item.Brand @item.Model
-                    </h4>
+                        <div class="car-specs">
+                            <div class="car-spec">
+                                <strong>@item.Year</strong>
+                                Year
+                            </div>
+                            <div class="car-spec">
+                                <strong>@item.Mileage.ToString("N0")</strong>
+                                Kilometres
+                            </div>
+                            <div class="car-spec">
+                                <strong>@item.FuelType</strong>
+                                Fuel
+                            </div>
+                        </div>
 
-                    <p>
-                        <strong>Year:</strong>
-                        @item.Year
-                    </p>
+                        <div class="car-card-actions">
+                            <a asp-action="Details" asp-route-id="@item.Id"
+                               class="btn btn-primary">View details</a>
 
-                    <p>
-                        <strong>Mileage:</strong>
-                        @item.Mileage km
-                    </p>
-
-                    <p>
-                        <strong>Fuel:</strong>
-                        @item.FuelType
-                    </p>
-
-                    <h5>
-                        @item.Price.ToString("N0") kr
-                    </h5>
-
-                </div>
-
-                <div class="card-footer">
-
-                    <a asp-action="Details"
-                       asp-route-id="@item.Id"
-                       class="btn btn-primary">
-                        Details
-                    </a>
-
-                    @if (User.IsInRole("Admin") ||
-                         item.SellerId == currentUserId)
-                    {
-                        <a asp-action="Edit"
-                           asp-route-id="@item.Id"
-                           class="btn btn-warning">
-                            Edit
-                        </a>
-
-                        <a asp-action="Delete"
-                           asp-route-id="@item.Id"
-                           class="btn btn-danger">
-                            Delete
-                        </a>
-                    }
-
-                </div>
-
+                            @if (User.IsInRole("Admin") || item.SellerId == currentUserId)
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.Id"
+                                   class="btn btn-outline-secondary">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id"
+                                   class="btn btn-outline-danger">Delete</a>
+                            }
+                        </div>
+                    </div>
+                </article>
             </div>
-
-        </div>
-    }
-
-</div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <h2>No cars found</h2>
+        <p class="text-muted">Try another brand, model or fuel type.</p>
+        <a asp-action="Index" class="btn btn-primary">Show all cars</a>
+    </div>
+}

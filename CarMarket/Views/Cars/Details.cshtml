@@ -1,113 +1,89 @@
 @model CarMarket.Models.Car
 
 @{
-    ViewData["Title"] = "Car Details";
+    ViewData["Title"] = $"{Model.Brand} {Model.Model}";
 }
 
-<div class="container mt-4">
+<div class="mb-4">
+    <a asp-action="Index" class="text-secondary fw-semibold">&larr; Back to all cars</a>
+</div>
 
-    <div class="row">
-
-        <!-- LEFT SIDE: IMAGES -->
-        <div class="col-md-6">
-
-            <!-- MAIN IMAGE -->
+<article class="details-shell">
+    <div class="row g-0">
+        <div class="col-lg-7 details-gallery">
             <img src="@(string.IsNullOrEmpty(Model.ImageUrl)
-                                         ? "/images/no-car-image.jpg"
-                                         : Model.ImageUrl)"
-                 class="img-fluid rounded shadow mb-3"
-                 alt="@Model.Brand @Model.Model"
-                 style="width: 100%; height: 450px; object-fit: cover;" />
+                                      ? "/images/no-car-image.jpg"
+                                      : Model.ImageUrl)"
+                 class="details-main-image"
+                 alt="@Model.Brand @Model.Model" />
 
-            <!-- EXTRA IMAGES -->
-            <div class="row g-2">
+            @if (!string.IsNullOrEmpty(Model.ImageUrl2) ||
+                 !string.IsNullOrEmpty(Model.ImageUrl3) ||
+                 !string.IsNullOrEmpty(Model.ImageUrl4))
+            {
+                <div class="row g-2 mt-1">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl2))
+                    {
+                        <div class="col-4">
+                            <img src="@Model.ImageUrl2" class="details-thumb"
+                                 alt="@Model.Brand @Model.Model side view" />
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl3))
+                    {
+                        <div class="col-4">
+                            <img src="@Model.ImageUrl3" class="details-thumb"
+                                 alt="@Model.Brand @Model.Model interior" />
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl4))
+                    {
+                        <div class="col-4">
+                            <img src="@Model.ImageUrl4" class="details-thumb"
+                                 alt="@Model.Brand @Model.Model additional view" />
+                        </div>
+                    }
+                </div>
+            }
+        </div>
 
-                @if (!string.IsNullOrEmpty(Model.ImageUrl2))
-                {
-                    <div class="col-4">
-                        <img src="@Model.ImageUrl2"
-                             class="img-fluid rounded shadow-sm"
-                             alt="Extra image 1"
-                             style="width: 100%; height: 120px; object-fit: cover;" />
-                    </div>
-                }
+        <div class="col-lg-5 details-info">
+            <p class="page-eyebrow">Car listing</p>
+            <h1 class="page-title">@Model.Brand @Model.Model</h1>
+            <p class="details-price">@Model.Price.ToString("N0") kr</p>
 
-                @if (!string.IsNullOrEmpty(Model.ImageUrl3))
-                {
-                    <div class="col-4">
-                        <img src="@Model.ImageUrl3"
-                             class="img-fluid rounded shadow-sm"
-                             alt="Extra image 2"
-                             style="width: 100%; height: 120px; object-fit: cover;" />
-                    </div>
-                }
-
-                @if (!string.IsNullOrEmpty(Model.ImageUrl4))
-                {
-                    <div class="col-4">
-                        <img src="@Model.ImageUrl4"
-                             class="img-fluid rounded shadow-sm"
-                             alt="Extra image 3"
-                             style="width: 100%; height: 120px; object-fit: cover;" />
-                    </div>
-                }
-
+            <div class="details-specs">
+                <div class="details-spec">
+                    <span>Year</span>
+                    <strong>@Model.Year</strong>
+                </div>
+                <div class="details-spec">
+                    <span>Mileage</span>
+                    <strong>@Model.Mileage.ToString("N0") km</strong>
+                </div>
+                <div class="details-spec">
+                    <span>Fuel</span>
+                    <strong>@Model.FuelType</strong>
+                </div>
             </div>
 
+            <section class="details-description">
+                <h2>Description</h2>
+                <p>@(string.IsNullOrWhiteSpace(Model.Description)
+                    ? "The seller has not added a description yet."
+                    : Model.Description)</p>
+            </section>
+
+            <div class="d-grid gap-2 mt-4">
+                <a href="mailto:?subject=Question about @Model.Brand @Model.Model"
+                   class="btn btn-primary btn-lg">Contact about this car</a>
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id"
+                       class="btn btn-outline-secondary">Edit listing</a>
+                }
+            </div>
         </div>
-
-        <!-- RIGHT SIDE: CAR INFORMATION -->
-        <div class="col-md-6">
-
-            <h1>
-                @Model.Brand @Model.Model
-            </h1>
-
-            <h3 class="text-success mb-4">
-                @Model.Price.ToString("N0") kr
-            </h3>
-
-            <p>
-                <strong>Year:</strong>
-                @Model.Year
-            </p>
-
-            <p>
-                <strong>Mileage:</strong>
-                @Model.Mileage km
-            </p>
-
-            <p>
-                <strong>Fuel Type:</strong>
-                @Model.FuelType
-            </p>
-
-            <hr />
-
-            <h4>Description</h4>
-
-            <p>
-                @Model.Description
-            </p>
-
-            <hr />
-
-            <a asp-action="Index"
-               class="btn btn-secondary">
-                Back to Cars
-            </a>
-
-            @if (User.IsInRole("Admin"))
-            {
-                <a asp-action="Edit"
-                   asp-route-id="@Model.Id"
-                   class="btn btn-warning">
-                    Edit
-                </a>
-            }
-
-        </div>
-
     </div>
-
-</div>
+</article>
