@@ -14,13 +14,6 @@
             <a asp-controller="Cars" asp-action="Index" class="btn btn-primary btn-lg">
                 Browse all cars
             </a>
-            @if (User.Identity?.IsAuthenticated == true &&
-                 !User.IsInRole("Admin"))
-            {
-                <a asp-controller="Cars" asp-action="Create" class="btn btn-light btn-lg">
-                    Sell your car
-                </a>
-            }
         </div>
     </div>
 </section>
