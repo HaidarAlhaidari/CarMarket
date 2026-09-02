@@ -14,34 +14,7 @@
             <a asp-controller="Cars" asp-action="Index" class="btn btn-primary btn-lg">
                 Browse all cars
             </a>
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <a asp-controller="Cars" asp-action="Create" class="btn btn-light btn-lg">
-                    Sell your car
-                </a>
-            }
-            else
-            {
-                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-light btn-lg">
-                    Create account
-                </a>
-            }
         </div>
-    </div>
-</section>
-
-<section class="trust-strip" aria-label="CarMarket benefits">
-    <div class="trust-item">
-        <strong>Quality listings</strong>
-        <span>Clear information and multiple images</span>
-    </div>
-    <div class="trust-item">
-        <strong>Powerful search</strong>
-        <span>Find cars by brand, model and fuel type</span>
-    </div>
-    <div class="trust-item">
-        <strong>Secure accounts</strong>
-        <span>Protected access for buyers and sellers</span>
     </div>
 </section>
 
